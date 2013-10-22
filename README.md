@@ -3,7 +3,7 @@
 
 I decided to learn my favourite language's most popular web framework and NoSQL, since my past web experience has been with Ruby on Rails and MySQL.
 
-[![websitescreenshot](https://raw.github.com/dharmaturtle/DestinyChatLogWebsite/master/screenshot.png)]((http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/))
+[![websitescreenshot](https://raw.github.com/dharmaturtle/DestinyChatLogWebsite/master/screenshot.png)](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)
 
 ## How to use
 
