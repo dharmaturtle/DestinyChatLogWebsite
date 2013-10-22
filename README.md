@@ -1,14 +1,13 @@
 # Destiny Chat Log Website
-## Now in Django and MongoDB
-## [See it live here!](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)
+## Now in Django and MongoDB - [See it live here!](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)
 
-Decided to learn my favourite language's most popular web framework and NoSQL, since my past web experience has been with Ruby on Rails and MySQL.
+I decided to learn my favourite language's most popular web framework and NoSQL, since my past web experience has been with Ruby on Rails and MySQL.
 
 ![websitescreenshot](https://raw.github.com/dharmaturtle/DestinyChatLogWebsite/master/screenshot.png)
 
 ## How to use
 
-'pip freeze' says I'm using these:
+`pip freeze` says I'm using these:
 
     Django==1.3.7
     argparse==1.2.1
@@ -18,7 +17,7 @@ Decided to learn my favourite language's most popular web framework and NoSQL, s
     pymongo==2.6.3
     wsgiref==0.1.2
 
-Follow the guide [here](http://django-mongodb-engine.readthedocs.org/en/latest/topics/setup.html), but be prepared to Google some error messages. If you run into `Please make sure your SITE_ID contains a valid ObjectId string.`, [StackOverflow](http://stackoverflow.com/questions/8819456/django-mongodb-engine-error-when-running-tellsiteid/19509204#19509204) has many solutions.
+I'm using the `nonrel` fork of Django. Follow the guide [here](http://django-mongodb-engine.readthedocs.org/en/latest/topics/setup.html), but be prepared to Google some error messages. If you run into `Please make sure your SITE_ID contains a valid ObjectId string.`, [StackOverflow](http://stackoverflow.com/questions/8819456/django-mongodb-engine-error-when-running-tellsiteid/19509204#19509204) has many solutions.
 
 ## To do
 
