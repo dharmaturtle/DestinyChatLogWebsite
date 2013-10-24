@@ -1,7 +1,7 @@
 # [Destiny Chat Log Website](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)
 ## Now in Django and MongoDB!
 
-I decided to learn my favourite language's most popular web framework and NoSQL, since my past web experience has been with Ruby on Rails and MySQL.
+I decided to learn my favourite language's most popular web framework, NoSQL, and map reduce, since my past web experience has been with Ruby on Rails and MySQL.
 
 [![websitescreenshot](https://raw.github.com/dharmaturtle/DestinyChatLogWebsite/master/screenshot.PNG)](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)
 
@@ -21,4 +21,14 @@ I'm using the `nonrel` fork of Django. Follow the guide [here](http://django-mon
 
 ## To do
 
-There are a ton of features I want to implement. The screenshot will become quickly outdated, just visit the site [here](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)!
+There are a ton of features I want to implement. The screenshot will become quickly outdated. Visit the site [here](http://ec2-54-241-15-193.us-west-1.compute.amazonaws.com:8080/)!
+
+In the works:
+
+* Hyperlinked timestamps
+* Timezone detection and customization views/searches with JavaScript
+* More statistics (more map reduce!)
+* Convert floats to ints in Statistics
+* Many, many small bug fixes
+
+Code will be uploaded when I'm done ironing out bugs. Map reduce scripts are available, though.
