@@ -19,7 +19,7 @@ db.logapp_log.mapReduce(
 function verbosity_update(){
 	db.logapp_log_verbosity.find().forEach(function(doc){
 		db.logapp_log_verbosity.update({_id:doc._id}, {$set:{"user":doc._id}});
+		db.logapp_log_verbosity.update({value:doc.value}, {$set:{"rank":NumberInt( doc.value )}});
 	});
 }
 verbosity_update();
-db.logapp_log_verbosity.update({}, {$rename: {'value':'rank'}}, false, true);

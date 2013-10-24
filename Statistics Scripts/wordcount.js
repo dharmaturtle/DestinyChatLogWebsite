@@ -24,7 +24,7 @@ db.logapp_log.mapReduce(
 function wordcount_update(){
 	db.logapp_log_wordcount.find().forEach(function(doc){
 		db.logapp_log_wordcount.update({_id:doc._id}, {$set:{"word":doc._id}});
+		db.logapp_log_wordcount.update({value:doc.value}, {$set:{"rank":NumberInt( doc.value )}});
 	});
 }
 wordcount_update();
-db.logapp_log_wordcount.update({}, {$rename: {'value':'rank'}}, false, true);
