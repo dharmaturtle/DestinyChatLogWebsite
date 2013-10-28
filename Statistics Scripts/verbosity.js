@@ -1,3 +1,5 @@
+/* counts how many times a user has spoken */
+
 conn = new Mongo();
 db = conn.getDB('testDB2');
 db.logapp_log.mapReduce(
@@ -15,11 +17,18 @@ db.logapp_log.mapReduce(
 	}
  );
 
-/* adds "user" and changes "value" to "rank", because Django is unhappy with variables beginning with _ */
-function verbosity_update(){
-	db.logapp_log_verbosity.find().forEach(function(doc){
-		db.logapp_log_verbosity.update({_id:doc._id}, {$set:{"user":doc._id}});
-		db.logapp_log_verbosity.update({value:doc.value}, {$set:{"rank":NumberInt( doc.value )}});
-	});
-}
-verbosity_update();
+/* cleaning up after map reduce */
+db.logapp_log_verbosity.find().forEach(function(doc){
+	db.logapp_log_verbosity.update( /* copies _id to user because Django can't grab id */
+		{_id:doc._id}, 
+		{$set:
+			{"user":doc._id}
+		}
+	);
+	db.logapp_log_verbosity.update( /* converts value to int for prettier numbers */
+		{value:doc.value},
+		{$set:
+			{value:NumberInt( doc.value )}
+		}
+	);
+});

@@ -1,11 +1,14 @@
+/* counts how many times a word is said */
+
 conn = new Mongo();
 db = conn.getDB('testDB2');
+
 db.logapp_log.mapReduce(
 	function() {
-		var regex = /[\w']+/g;
+		var regex = /[\w']+/g;   /* matches a word */
 		var matched = null;
 		while (matched = regex.exec(this.text.toLowerCase())) {
-			emit(matched[0], 1);
+			emit(matched[0], 1); /* emits every word */
 		}
 	}, 
 	function (key, vals) {
@@ -19,12 +22,18 @@ db.logapp_log.mapReduce(
 	}
 );
 
-
-/* adds "word" and changes "value" to "rank", because Django is unhappy with variables beginning with _ */
-function wordcount_update(){
-	db.logapp_log_wordcount.find().forEach(function(doc){
-		db.logapp_log_wordcount.update({_id:doc._id}, {$set:{"word":doc._id}});
-		db.logapp_log_wordcount.update({value:doc.value}, {$set:{"rank":NumberInt( doc.value )}});
-	});
-}
-wordcount_update();
+/* cleaning up after map reduce */
+db.logapp_log_wordcount.find().forEach(function(doc){
+	db.logapp_log_wordcount.update( /* copies _id to user because Django can't grab id */
+		{_id:doc._id},
+		{$set:
+			{"word":doc._id}
+		}
+	);
+	db.logapp_log_wordcount.update( /* converts value to int for prettier numbers */
+		{value:doc.value},
+		{$set:
+			{"value":NumberInt( doc.value )}
+		}
+	);
+});
