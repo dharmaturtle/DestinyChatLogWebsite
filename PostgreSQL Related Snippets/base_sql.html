@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block log %}
+<div class = "search"></div>
+	<div class="paginatebar">
+		<div class="pagination">
+			<span class="step-links">
+				{% if page > 0 %}
+					<a href="?page={{ page|add:'-1' }}&q={{query}}"><<</a>
+				{% endif %}
+
+				<span class="current">
+					{{ page }}
+				</span>
+
+				<a href="?page={{ page|add:'1' }}&q={{query}}">>></a>
+				
+			</span>
+		</div>
+	</div>
+<div class="innerbox">
+	<table>
+	<tr><td colspan="3"><span class="timezone">Times are given in CST</span></td></tr>
+	{% for log in log_list %}
+	<tr>
+		<td class="time" {#title="{{log.time}}"#} >{{log.number}}</td>
+		<td class="time" {#title="{{log.time}}"#} >{{log.time}}</td>
+		<td class="user"><a href="/user/?q={{log.user}}">{{log.user}}</a></td>
+		<td class="message">{{log.text}}</td>
+	</tr>
+	{% endfor %}
+	</table>
+</div>
+{% endblock %}
