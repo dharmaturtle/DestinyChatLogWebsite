@@ -1,5 +1,11 @@
 /* counts how many time a person's name is said */
 
+/******************************************************************************************
+  *
+  * IMPORTANT: MAKE SURE YOU RUN WORDLINE_COUNT.JS BEFORE THIS
+  *
+  ******************************************************************************************/
+
 conn = new Mongo();
 db = conn.getDB('testDB2');
 var names=new Array();
@@ -8,7 +14,7 @@ var Names=new Array();
 /* This generates two n/Names arrays, since it is faster to do .toLowerCase
  * here and compare in the map than to run a .toLowerCase on every map run. */
 var i = 0;
-db.logapp_log_verbosity.find({}, { '_id' : 1 } ).forEach(function(doc){
+db.logapp_log_wordline_count.find({}, { '_id' : 1 } ).forEach(function(doc){
 	names[i] = doc._id.toLowerCase();
 	Names[i] = doc._id;
 	i++;

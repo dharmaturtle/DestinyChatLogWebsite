@@ -11,7 +11,7 @@ conn = new Mongo();
 db = conn.getDB('testDB2');
 
 map = function() {
-	var emotes = ["abathur", "angelthump", "aslan", "basedgod", "biblethump", "dappakappa", "djaslan", "dravewin", "duckerz", "durrstiny", "feednathan", "fidgetlol", "frankerz", "gameofthrows", "heimerdonger", "hhhehhehe", "infestiny", "kappa", "klappa", "lul", "notears", "ohkrappa", "overrustle", "sodoge", "sosad", "surprise", "toospicy", "whoahdude", "worth"];
+	var emotes = ["abathur","angelthump","aslan","basedgod","biblethump","callcatz","callchad","dafeels","dappakappa","desbro","djaslan","dravewin","duckerz","durrstiny","feednathan","fidgetlol","frankerz","gameofthrows","heimerdonger","hhhehhehe","infestiny","kappa","klappa","lul","motherfuckingame","notears","ohkrappa","overrustle","sodoge","sosad","surprise","toospicy","uwotm8","whoahdude","worth"];
 	if (emotes.indexOf(this._id) > -1)
 		emit(this._id, this );
 }
