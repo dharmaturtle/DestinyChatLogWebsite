@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block nav-sql %}selected gradient{% endblock %}
+
+{% block log %}
+<div class = "search"></div>
+	<div class="paginatebar">
+		<div class="pagination">
+			<span class="step-links">
+				{% if page > 0 %}
+					<a href="?page={{ page|add:'-1' }}&amp;q={{query}}">&lt;&lt;</a>
+				{% endif %}
+
+				<span class="current">
+					{{ page }}
+				</span>
+
+				<a href="?page={{ page|add:'1' }}&amp;q={{query}}">&gt;&gt;</a>
+				
+			</span>
+		</div>
+	</div>
+<div class="innerbox">
+	<table>
+	<tr><td colspan="3"><span class="timezone">Times are given in CST{#<%= @messages.first.time.strftime("%Z") %>.#}</span></td></tr>
+	{% for log in log_list %}
+	<tr>
+		<td class="time" {#title="{{log.time}}"#} >{{log.time}}</td>
+		<td class="user"><a href="/user/?q={{log.user}}">{{log.user}}</a></td>
+		<td class="message">{{log.text}}</td>
+	</tr>
+	{% endfor %}
+	</table>
+</div>
+{% endblock %}
+<!--
+http://stackoverflow.com/questions/340888/navigation-in-django/899993#899993
+https://github.com/divio/django-cms/blob/develop/menus/templates/menu/menu.html
+https://www.google.com/search?q=django+template+menu+example&oq=django+template+menu+example&aqs=chrome..69i57j0.11203j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+https://www.google.com/search?q=django+class+select&oq=django+class+selec&aqs=chrome.1.69i57j0l3.12307j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+-->

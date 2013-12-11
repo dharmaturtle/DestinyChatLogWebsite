@@ -1,0 +1,719 @@
+{% extends "base.html" %}
+{% block nav-streams %}selected gradient{% endblock %}
+
+{% block css %}{{block.super}}
+	<link rel="stylesheet" type="text/css" href="/static/d3.css" />
+{% endblock %}
+
+{% block log %}
+<div class = "search"></div>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="/static/nvtooltip.js"></script>
+
+<div class="innerbox">
+	<div id="topstreamersgraph"><svg></svg></div>
+	<div>
+		Graph automatically updates every 5 minutes. Last updated at: <span id='TimeLabel'></span>
+		<input type="button" id="Time" value="Force Update" />
+	</div>
+	<script>
+$(document).ready(function () {
+var color = d3.scale.ordinal()
+	.range(["#ED1C24", "#00AEEF", "#F26522", "#0072BC", "#F7941D", "#0054A6", "#2E3192", "#8DC73F", "#662D91", "#39B54A", "#92278F", "#00A651", "#EC008C", "#00A99D", "#ED145B", "#790000", "#F6989D", "#005B7F", "#7BCDC8", "#7B2E00", "#F49AC2", "#003663", "#82CA9D", "#7D4900", "#BC8DBF", "#002157", "#A2D39C", "#827B00", "#A187BE", "#0D004C", "#C4DF9B", "#406618", "#8882BE", "#32004B", "#FFF79A", "#005E20", "#8493CA", "#4B0049", "#FDC68A", "#005826", "#7EA7D8", "#7B0046", "#F9AD81", "#005952", "#6ECFF6", "#7A0026", "#F7977A", "#FFF200"]), //http://www.tinygorilla.com/Easter_eggs/PallateHex.html
+	margin = {
+		top: 30,
+		right: 10,
+		bottom: 50,
+		left: 60
+	},
+	chart = d3LineWithLegend()
+		.width(width())
+		.height(height())
+		.yAxis.label('Viewers');
+
+function width() {
+	var w = $(window)
+		.width() - 95;
+	return ((w - margin.left - margin.right - 20) < 0) ? margin.left + margin.right + 2 : w;
+}
+
+function height() {
+	var h = $(window)
+		.height();
+	return (h - margin.top - margin.bottom - 20 < 0) ? margin.top + margin.bottom + 2 : h;
+}
+
+function update() {
+	d3.tsv("data.tsv" + '?' + Math.floor(Math.random() * 10000000000), function (data) { //http://stackoverflow.com/questions/13053096/avoid-data-caching-when-using-d3-text
+		color.domain(d3.keys(data[0])
+			.filter(function (key) {
+				return key !== "date";
+			}));
+		data.forEach(function (d) {
+			d.date = d3.time.format("%Y-%m-%d %X")
+				.parse(d.date);
+		});
+		var streams = color.domain()
+			.map(function (label) {
+				return {
+					label: label,
+					data: data.map(function (d) {
+						return [d.date, +d[label]];
+					})
+				};
+			});
+		var svg = d3.select('#topstreamersgraph svg')
+			.datum(streams);
+		svg.attr('width', width())
+			.attr('height', height())
+			.call(chart);
+		chart.dispatch.on('showTooltip', function (e) {
+			var offset = $('#topstreamersgraph')
+				.offset(),
+				left = e.pos[0] + offset.left,
+				top = e.pos[1] + offset.top,
+				timeformat = d3.time.format("%-I:%M%p %b %e");
+			var viewerformat = d3.format(",");
+			var content = '<h3>' + e.series.label + '</h3>' +
+				'<div class="value">' + timeformat(e.point[0]) + ' CST' +
+				'<br>' + viewerformat(e.point[1]) + ' viewers</div>';
+			nvtooltip.show([left, top], content);
+		});
+		chart.dispatch.on('hideTooltip', function () {
+			nvtooltip.cleanup();
+		});
+		$(window)
+			.resize(function () {
+				chart.width(width())
+					.height(height());
+				d3.select('#topstreamersgraph svg')
+					.attr('width', width())
+					.attr('height', height())
+					.call(chart);
+			});
+	});
+}
+$(window)
+	.load(function () { //http://stackoverflow.com/questions/5437447/ajax-reading-from-file
+		requestTime(); //http://stackoverflow.com/questions/15547407/javascript-read-text-file-using-ajax
+		$("#Time")
+			.click(function () {
+				requestTime();
+			}); //http://ajaxify.com/run/time/
+		setInterval(requestTime, 300000);
+	});
+
+function requestTime() {
+	var txtFile = new XMLHttpRequest();
+	txtFile.open("GET", "./time.php", true);
+	txtFile.send(null);
+	txtFile.onreadystatechange = function () {
+		if (txtFile.readyState === 4) { // Makes sure the document is ready to parse.
+			if (txtFile.status === 200) { // Makes sure it's found the file.
+				$("#TimeLabel")
+					.html(txtFile.responseText + " CST");
+				update();
+			}
+		}
+	};
+}
+
+function d3LineWithLegend() {
+	var width, height,
+		margin = {
+			top: 10,
+			right: 150,
+			bottom: 40,
+			left: 60
+		},
+		xAxisLabelText = false,
+		yAxisLabelText = false,
+		color = d3.scale.ordinal()
+			.range(["#ED1C24", "#00AEEF", "#F26522", "#0072BC", "#F7941D", "#0054A6", "#2E3192", "#8DC73F", "#662D91", "#39B54A", "#92278F", "#00A651", "#EC008C", "#00A99D", "#ED145B", "#790000", "#F6989D", "#005B7F", "#7BCDC8", "#7B2E00", "#F49AC2", "#003663", "#82CA9D", "#7D4900", "#BC8DBF", "#002157", "#A2D39C", "#827B00", "#A187BE", "#0D004C", "#C4DF9B", "#406618", "#8882BE", "#32004B", "#FFF79A", "#005E20", "#8493CA", "#4B0049", "#FDC68A", "#005826", "#7EA7D8", "#7B0046", "#F9AD81", "#005952", "#6ECFF6", "#7A0026", "#F7977A", "#FFF200"])
+			.range(),
+		dispatch = d3.dispatch('showTooltip', 'hideTooltip'),
+		x = d3.time.scale(),
+		y = d3.scale.linear(),
+		xAxis = d3.svg.axis()
+			.scale(x)
+			.orient('bottom'),
+		yAxis = d3.svg.axis()
+			.scale(y)
+			.orient('left'),
+		legend = d3Legend()
+			.height(margin.top)
+			.color(color),
+		lines = d3Line();
+
+	function chart(selection) {
+		selection.each(function (data) {
+			var series = data.filter(function (d) {
+				return !d.disabled;
+			})
+				.map(function (d) {
+					return d.data;
+				});
+			x.domain(d3.extent(d3.merge(series), function (d) {
+				return d[0];
+			}))
+				.range([0, width - margin.left - margin.right]);
+			y.domain(d3.extent(d3.merge(series), function (d) {
+				return d[1];
+			}))
+				.range([height - margin.top - margin.bottom, 0]);
+			lines
+				.width(width - margin.left - margin.right)
+				.height(height - margin.top - margin.bottom)
+				.color(data.map(function (d, i) {
+						return d.color || color[i % 48];
+					})
+					.filter(function (d, i) {
+						return !data[i].disabled;
+					}));
+			xAxis
+				.ticks(width / 100)
+				.tickSize(-(height - margin.top - margin.bottom), 0);
+			yAxis
+				.ticks(height / 36)
+				.tickSize(-(width - margin.right - margin.left), 0);
+			var wrap = d3.select(this)
+				.selectAll('g.wrap')
+				.data([data]);
+			var gEnter = wrap.enter()
+				.append('g')
+				.attr('class', 'wrap d3lineWithLegend')
+				.append('g');
+			gEnter.append('g')
+				.attr('class', 'legendWrap');
+			gEnter.append('g')
+				.attr('class', 'x axis');
+			gEnter.append('g')
+				.attr('class', 'y axis');
+			gEnter.append('g')
+				.attr('class', 'linesWrap');
+			legend.dispatch.on('legendClick', function (d) {
+				d.disabled = !d.disabled;
+				if (!data.filter(function (d) {
+						return !d.disabled;
+					})
+					.length) {
+					data.forEach(function (d) {
+						d.disabled = false;
+					});
+				}
+				d3.transition(selection)
+					.call(chart);
+			});
+			legend.dispatch.on('legendMouseover', function (d) {
+				d.hover = true;
+				d3.transition(selection)
+					.call(chart);
+			});
+			legend.dispatch.on('legendMouseout', function (d) {
+				d.hover = false;
+				d3.transition(selection)
+					.call(chart);
+			});
+			lines.dispatch.on('pointMouseover.tooltip', function (e) {
+				dispatch.showTooltip({
+					point: e.point,
+					series: e.series,
+					pos: [e.pos[0] + margin.left, e.pos[1] + margin.top],
+					seriesIndex: e.seriesIndex,
+					pointIndex: e.pointIndex
+				});
+			});
+			lines.dispatch.on('pointMouseout.tooltip', function (e) {
+				dispatch.hideTooltip(e);
+			});
+			legend
+				.color(color)
+				.width(0);
+			wrap.select('.legendWrap')
+				.datum(data)
+				.attr('transform', 'translate(' + (width - margin.right + 50) + ',' + (legend.height()) + ')')
+				.call(legend);
+			//TODO: maybe margins should be adjusted based on what components are used: axes, axis labels, legend
+			margin.top = legend.height(); //need to re-render to see update
+			var g = wrap.select('g')
+				.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+			var linesWrap = wrap.select('.linesWrap')
+				.datum(data.filter(function (d) {
+					return !d.disabled;
+				}));
+			d3.transition(linesWrap)
+				.call(lines);
+			var xAxisLabel = g.select('.x.axis')
+				.selectAll('text.axislabel')
+				.data([xAxisLabelText || null]);
+			xAxisLabel.enter()
+				.append('text')
+				.attr('class', 'axislabel')
+				.attr('text-anchor', 'middle')
+				.attr('x', x.range()[1] / 2)
+				.attr('y', margin.bottom - 20);
+			xAxisLabel.exit()
+				.remove();
+			xAxisLabel.text(function (d) {
+				return d;
+			});
+			g.select('.x.axis')
+				.attr('transform', 'translate(0,' + y.range()[0] + ')')
+				.call(xAxis)
+				.selectAll('line.tick')
+				.filter(function (d) {
+					return !d;
+				})
+				.classed('zero', true);
+			var yAxisLabel = g.select('.y.axis')
+				.selectAll('text.axislabel')
+				.data([yAxisLabelText || null]);
+			yAxisLabel.enter()
+				.append('text')
+				.attr('class', 'axislabel')
+				.attr('transform', 'rotate(-90)')
+				.attr('text-anchor', 'middle')
+				.attr('y', 10 - margin.left);
+			yAxisLabel.exit()
+				.remove();
+			yAxisLabel
+				.attr('x', -y.range()[0] / 2)
+				.text(function (d) {
+					return d;
+				});
+			g.select('.y.axis')
+				.call(yAxis)
+				.selectAll('line.tick')
+				.filter(function (d) {
+					return !d;
+				})
+				.classed('zero', true);
+		});
+		return chart;
+	}
+	chart.dispatch = dispatch;
+	chart.width = function (_) {
+		if (!arguments.length) return width;
+		width = _;
+		return chart;
+	};
+	chart.height = function (_) {
+		if (!arguments.length) return height;
+		height = _;
+		return chart;
+	};
+	chart.yAxis = {};
+	chart.xAxis = {};
+	d3.rebind(chart.xAxis, xAxis, 'tickFormat'); //Expose axis's tickFormat
+	xAxis.tickFormat(d3.time.format("%-I%p"));
+	chart.yAxis.label = function (_) {
+		if (!arguments.length) return yAxisLabelText;
+		yAxisLabelText = _;
+		return chart;
+	};
+	return chart;
+}
+
+function d3Line() {
+	var margin = {
+		top: 0,
+		right: 0,
+		bottom: 0,
+		left: 0
+	},
+		width = 960,
+		height = 500,
+		dotRadius = function () {
+			return 2.5;
+		},
+		color = d3.scale.ordinal()
+			.range(["#ED1C24", "#00AEEF", "#F26522", "#0072BC", "#F7941D", "#0054A6", "#2E3192", "#8DC73F", "#662D91", "#39B54A", "#92278F", "#00A651", "#EC008C", "#00A99D", "#ED145B", "#790000", "#F6989D", "#005B7F", "#7BCDC8", "#7B2E00", "#F49AC2", "#003663", "#82CA9D", "#7D4900", "#BC8DBF", "#002157", "#A2D39C", "#827B00", "#A187BE", "#0D004C", "#C4DF9B", "#406618", "#8882BE", "#32004B", "#FFF79A", "#005E20", "#8493CA", "#4B0049", "#FDC68A", "#005826", "#7EA7D8", "#7B0046", "#F9AD81", "#005952", "#6ECFF6", "#7A0026", "#F7977A", "#FFF200"])
+			.range(),
+		id = Math.floor(Math.random() * 100000), //Create semi-unique ID in case user doesn't select one
+		x = d3.time.scale(),
+		y = d3.scale.linear(),
+		dispatch = d3.dispatch("pointMouseover", "pointMouseout"),
+		x0, y0;
+
+	function chart(selection) {
+		selection.each(function (data) {
+			var seriesData = data.map(function (d) {
+				return d.data;
+			});
+			x0 = x0 || x;
+			y0 = y0 || y;
+			//TODO: reconsider points {x: #, y: #} instead of [x,y]
+			//TODO: data accessors so above won't really matter, but need to decide for internal use
+			//add series data to each point for future ease of use 
+			data = data.map(function (series, i) {
+				series.data = series.data.map(function (point) {
+					point.series = i;
+					return point;
+				});
+				return series;
+			});
+			x.domain(d3.extent(d3.merge(seriesData), function (d) {
+				return d[0];
+			}))
+				.range([0, width - margin.left - margin.right]);
+			y.domain(d3.extent(d3.merge(seriesData), function (d) {
+				return d[1];
+			}))
+				.range([height - margin.top - margin.bottom, 0]);
+			var vertices = d3.merge(data.map(function (line, lineIndex) {
+				return line.data.map(function (point, pointIndex) {
+					//var pointKey = line.label + '-' + point[0];
+					if (!isNaN(point[1])) return [x(point[0]), y(point[1]), lineIndex, pointIndex]; //adding series index to point because data is being flattened
+				});
+			}));
+			for (var i = 0; i < vertices.length; i++) {
+				if (vertices[i] === undefined) {
+					vertices.splice(i, 1);
+					i--;
+				}
+			}
+			var wrap = d3.select(this)
+				.selectAll('g.d3line')
+				.data([data]);
+			var gEnter = wrap.enter()
+				.append('g')
+				.attr('class', 'd3line')
+				.append('g');
+			gEnter.append('g')
+				.attr('class', 'lines');
+			gEnter.append('g')
+				.attr('class', 'point-clips');
+			gEnter.append('g')
+				.attr('class', 'point-paths');
+			wrap.select('g')
+				.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+			gEnter.append('g')
+				.attr('class', 'voronoi-clip')
+				.append('clipPath')
+				.attr('id', 'voronoi-clip-path-' + id) //this id should probably be set on update, unless ID is always set before render
+			.append('rect');
+			wrap.select('.voronoi-clip rect')
+				.attr('x', -10)
+				.attr('y', -10)
+				.attr('width', width - margin.left - margin.right + 20)
+				.attr('height', height - margin.top - margin.bottom + 20);
+			wrap.select('.point-paths')
+				.attr('clip-path', 'url(#voronoi-clip-path-' + id + ')');
+			//var pointClips = wrap.select('.point-clips').selectAll('clipPath') // **BROWSER BUG** can't reselect camel cased elements
+			var pointClips = wrap.select('.point-clips')
+				.selectAll('.clip-path')
+				.data(vertices);
+			pointClips.enter()
+				.append('clipPath')
+				.attr('class', 'clip-path')
+				.append('circle')
+				.attr('r', 25);
+			pointClips.exit()
+				.remove();
+			pointClips
+				.attr('id', function (d) {
+					return 'clip-' + id + '-' + d[2] + '-' + d[3];
+				})
+				.attr('transform', function (d) {
+					return 'translate(' + d[0] + ',' + d[1] + ')';
+				});
+			var voronoi = d3.geom.voronoi(vertices)
+				.map(function (d, i) {
+					return {
+						'data': d,
+						'series': vertices[i][2],
+						'point': vertices[i][3]
+					};
+				});
+			//TODO: Add very small amount of noise to prevent duplicates
+			var pointPaths = wrap.select('.point-paths')
+				.selectAll('path')
+				.data(voronoi);
+			pointPaths.enter()
+				.append('path')
+				.attr('class', function (d, i) {
+					return 'path-' + i;
+				});
+			pointPaths.exit()
+				.remove();
+			pointPaths
+				.attr('clip-path', function (d) {
+					return 'url(#clip-' + id + '-' + d.series + '-' + d.point + ')';
+				})
+				.attr('d', function (d) {
+					return 'M' + d.data.join(',') + 'Z';
+				})
+				.on('mouseover', function (d) {
+					dispatch.pointMouseover({
+						point: data[d.series].data[d.point],
+						series: data[d.series],
+						pos: [x(data[d.series].data[d.point][0]) + margin.left, y(data[d.series].data[d.point][1]) + margin.top],
+						pointIndex: d.point,
+						seriesIndex: d.series
+					});
+				})
+				.on('mouseout', function (d) {
+					dispatch.pointMouseout({
+						point: d,
+						series: data[d.series],
+						pointIndex: d.point,
+						seriesIndex: d.series
+					});
+				});
+			dispatch.on('pointMouseover.point', function (d) {
+				d.series.halfhover = true;
+				d3.transition(selection)
+					.call(chart);
+				wrap.select('.line-' + d.seriesIndex + ' .point-' + d.pointIndex)
+					.classed('hover', true);
+			});
+			dispatch.on('pointMouseout.point', function (d) {
+				d.series.halfhover = false;
+				d3.transition(selection)
+					.call(chart);
+				wrap.select('.line-' + d.seriesIndex + ' .point-' + d.pointIndex)
+					.classed('hover', false);
+			});
+			var lines = wrap.select('.lines')
+				.selectAll('.line')
+				.data(function (d) {
+					return d;
+				}, function (d) {
+					return d.label;
+				});
+			lines.enter()
+				.append('g')
+				.style('stroke-opacity', 1e-6)
+				.style('fill-opacity', 1e-6);
+			d3.transition(lines.exit())
+				.style('stroke-opacity', 1e-6)
+				.style('fill-opacity', 1e-6)
+				.remove();
+			lines.attr('class', function (d, i) {
+				return 'line line-' + i;
+			})
+				.classed('hover', function (d) {
+					return d.hover;
+				})
+				.classed('halfhover', function (d) {
+					return d.halfhover;
+				})
+				.style('fill', function (d, i) {
+					return color[i % 48];
+				})
+				.style('stroke', function (d, i) {
+					return color[i % 48];
+				});
+			d3.transition(lines)
+				.style('stroke-opacity', 1)
+				.style('fill-opacity', 0.5);
+			var paths = lines.selectAll('path')
+				.data(function (d) {
+					return [d.data];
+				});
+			paths.enter()
+				.append('path')
+				.attr('d', d3.svg.line()
+					.defined(function (d) {
+						return !isNaN(d[1]);
+					})
+					.x(function (d) {
+						return x0(d[0]);
+					})
+					.y(function (d) {
+						return y0(d[1]);
+					})
+			);
+			paths.exit()
+				.remove();
+			d3.transition(paths)
+				.attr('d', d3.svg.line()
+					.defined(function (d) {
+						return !isNaN(d[1]);
+					})
+					.x(function (d) {
+						return x(d[0]);
+					})
+					.y(function (d) {
+						return y(d[1]);
+					})
+			);
+			var points = lines.selectAll('circle.point')
+				.data(function (d) {
+					return d.data;
+				});
+			points.enter()
+				.append('circle')
+				.attr('cx', function (d) {
+					if (!isNaN(d[1])) return x0(d[0]);
+					else return -100;
+				}) //the -100 is an ugly hack to just push it off the canvas
+			.attr('cy', function (d) {
+				if (!isNaN(d[1])) return y0(d[1]);
+				else return -100;
+			}); //we can't just remove it because it messes up the ordering.
+			points.exit()
+				.remove();
+			points.attr('class', function (d, i) {
+				return 'point point-' + i;
+			});
+			d3.transition(points)
+				.attr('cx', function (d) {
+					if (!isNaN(d[1])) return x(d[0]);
+					else return -100;
+				})
+				.attr('cy', function (d) {
+					if (!isNaN(d[1])) return y(d[1]);
+					else return -100;
+				})
+				.attr('r', dotRadius());
+		});
+		x0 = x;
+		y0 = y;
+		return chart;
+	}
+	chart.dispatch = dispatch;
+	chart.margin = function (_) {
+		if (!arguments.length) return margin;
+		margin = _;
+		return chart;
+	};
+	chart.width = function (_) {
+		if (!arguments.length) return width;
+		width = _;
+		return chart;
+	};
+	chart.height = function (_) {
+		if (!arguments.length) return height;
+		height = _;
+		return chart;
+	};
+	chart.dotRadius = function (_) {
+		if (!arguments.length) return dotRadius;
+		dotRadius = d3.functor(_);
+		return chart;
+	};
+	chart.color = function (_) {
+		if (!arguments.length) return color;
+		color = _;
+		return chart;
+	};
+	chart.id = function (_) {
+		if (!arguments.length) return id;
+		id = _;
+		return chart;
+	};
+	return chart;
+}
+
+function d3Legend() {
+	var margin = {
+		top: 0,
+		right: 0,
+		bottom: 0,
+		left: 10
+	},
+		width = 400,
+		height = 0,
+		color = d3.scale.ordinal()
+			.range(["#ED1C24", "#00AEEF", "#F26522", "#0072BC", "#F7941D", "#0054A6", "#2E3192", "#8DC73F", "#662D91", "#39B54A", "#92278F", "#00A651", "#EC008C", "#00A99D", "#ED145B", "#790000", "#F6989D", "#005B7F", "#7BCDC8", "#7B2E00", "#F49AC2", "#003663", "#82CA9D", "#7D4900", "#BC8DBF", "#002157", "#A2D39C", "#827B00", "#A187BE", "#0D004C", "#C4DF9B", "#406618", "#8882BE", "#32004B", "#FFF79A", "#005E20", "#8493CA", "#4B0049", "#FDC68A", "#005826", "#7EA7D8", "#7B0046", "#F9AD81", "#005952", "#6ECFF6", "#7A0026", "#F7977A", "#FFF200"])
+			.range(),
+		dispatch = d3.dispatch('legendClick', 'legendMouseover', 'legendMouseout');
+
+	function chart(selection) {
+		selection.each(function (data) {
+			/**
+			 *    Legend curently is setup to automaticaly expand vertically based on a max width.
+			 *    Should implement legend where EITHER a maxWidth or a maxHeight is defined, then
+			 *    the other dimension will automatically expand to fit, and anything that exceeds
+			 *    that will automatically be clipped.
+			 **/
+			var wrap = d3.select(this)
+				.selectAll('g.legend')
+				.data([data]);
+			wrap.enter()
+				.append('g')
+				.attr('class', 'legend')
+				.append('g');
+			var g = wrap.select('g')
+				.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+			var series = g.selectAll('.series')
+				.data(function (d) {
+					return d;
+				});
+			var seriesEnter = series.enter()
+				.append('g')
+				.attr('class', 'series')
+				.on('click', function (d, i) {
+					dispatch.legendClick(d, i);
+				})
+				.on('mouseover', function (d, i) {
+					dispatch.legendMouseover(d, i);
+				})
+				.on('mouseout', function (d, i) {
+					dispatch.legendMouseout(d, i);
+				});
+			seriesEnter.append('circle')
+				.style('fill', function (d, i) {
+					return d.color || color[i % 48];
+				})
+				.style('stroke', function (d, i) {
+					return d.color || color[i % 48];
+				})
+				.attr('r', 5);
+			seriesEnter.append('text')
+				.text(function (d) {
+					return d.label;
+				})
+				.attr('text-anchor', 'start')
+				.attr('dy', '.32em')
+				.attr('dx', '8');
+			series.classed('disabled', function (d) {
+				return d.disabled;
+			});
+			series.exit()
+				.remove();
+			series
+				.attr('transform', function (d, i) {
+					return 'translate(' + 0 + ',' + ($(window)
+						.height()) / (series.size() + 1) * i + ')';
+				});
+			//position legend as far right as possible within the total width
+			g.attr('transform', 'translate(' + (width - 95) + ',' + margin.top + ')');
+			//height = margin.top + margin.bottom;
+		});
+		return chart;
+	}
+	chart.dispatch = dispatch;
+	chart.margin = function (_) {
+		if (!arguments.length) return margin;
+		margin = _;
+		return chart;
+	};
+	chart.width = function (_) {
+		if (!arguments.length) return width;
+		width = _;
+		return chart;
+	};
+	chart.height = function (_) {
+		if (!arguments.length) return height;
+		height = _;
+		return chart;
+	};
+	chart.color = function (_) {
+		if (!arguments.length) return color;
+		color = _;
+		return chart;
+	};
+	return chart;
+}
+	});
+	</script>
+</div>
+{% endblock %}
+<!--
+http://stackoverflow.com/questions/340888/navigation-in-django/899993#899993
+https://github.com/divio/django-cms/blob/develop/menus/templates/menu/menu.html
+https://www.google.com/search?q=django+template+menu+example&oq=django+template+menu+example&aqs=chrome..69i57j0.11203j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+https://www.google.com/search?q=django+class+select&oq=django+class+selec&aqs=chrome.1.69i57j0l3.12307j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+-->

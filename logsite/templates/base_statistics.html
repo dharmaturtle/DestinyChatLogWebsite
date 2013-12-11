@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+{% block nav-statistics %}selected gradient{% endblock %}
+
+{% block css %}{{block.super}}
+	<link rel="stylesheet" type="text/css" href="/static/bars.css" >
+{% endblock %}
+
+{% block js %}{{block.super}}
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/static/index.js"></script>
+{% endblock %}
+
+{% block log %}
+<div class = "search"></div>
+<div class = "innerbox">
+	<div style="margin: 40px;" class="center">
+	<h2>A bit of math</h2>
+	<p>
+	The average of everyone's words/line is {{std.avg}}<br>
+	The standard deviation of total the words/line is {{std.stddev}}<br>
+	This is unsurprising because the length of lines in chat can vary greatly.<br>
+	</p>
+	<p>
+	The average of everyone's lines of text is {{average_lines}}<br>
+	The standard deviation of the lines of text over our entire population is {{std_lines}} <br>
+	This is unsurprising because we have many "lurkers" and many people who really enjoy talking.<br>
+	</p>
+	</div>
+	<div style="overflow: hidden;"> <!-- http://stackoverflow.com/questions/218760/how-do-you-keep-parents-of-floated-elements-from-collapsing -->
+		<div class="half half-left">
+			<h2>People who enjoy talking</h2>
+				<div class="axislabel">Lines typed</div>
+				<div id="verbosity"><svg></svg></div>
+			<h2>Words we like saying</h2>
+				<!--<div class="axislabel">Times it was typed</div>-->
+				<div id="wordcount"><svg></svg></div>
+		</div>
+		<div class="half half-right">
+			<h2>People we love talking to</h2>
+				<div class="axislabel">Times their name was typed</div>
+				<div id="popularity"><svg></svg></div>
+			<h2>Faces we delight in making</h2>
+				<!--<div class="axislabel">Times it was typed</div>-->
+				<div id="faces"><svg></svg></div>
+		</div>
+	</div>
+	<br>
+	<h2>Popular times to talk</h2>
+	<div id="radial"><svg></svg></div>
+	<br>
+	<table class="inlineBlock">
+	<tr>
+		<th colspan="2">Friends!</th>
+		<th></th>
+	</tr>
+	{% for talker in network %}
+	<tr>
+		<td class="time">{{forloop.counter}}</td>
+		<td class="user"><a href="/user/?q={{talker.talker}}">{{talker.talker}}</a></td>
+		<td class="message">{{talker.sumvalue}}</td>
+	</tr>
+	{% for listener in talker.listener %}
+	<tr>
+		<td class="time"></td>
+		<td class="user">{{listener.value}}</td>
+		<td class=""><a href="/user/?q={{listener.user}}">{{listener.user}}</a></td>
+	</tr>
+	{% endfor %}
+	<tr>
+		<td><br></td>
+		<td><br></td>
+		<td><br></td>
+	</tr>
+	{% endfor %}
+	</table>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function () {
+var hoverdelay = 50;
+(function () {
+	var dataVerbosity = {{verbosity|safe}};
+	var dataPopularity = {{popularity|safe}};
+	var dataWordcount = {{wordcount|safe}};
+	var dataFaces = {{emote|safe}};
+	d3.select("#verbosity svg")
+		.call(barChart()
+			.data(dataVerbosity)
+			.link("user")
+			.type("verbosity")
+			.tip(d3.tip()
+				.html(function (d) {
+					return '#' + d.ordinal + ':&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lines Typed: ' + d.value + '<div style= "text-align:right;">Words Typed: ' + d.wordcount + '</div>';
+				})));
+	d3.select("#popularity svg")
+		.call(barChart()
+			.data(dataPopularity)
+			.link("user")
+			.type("popularity")
+			.tip(d3.tip()
+				.html(function (d) {
+					return '#' + d.ordinal + ':&nbsp;&nbsp;&nbsp;' + d.value;
+				})));
+	d3.select("#wordcount svg")
+		.call(barChart()
+			.data(dataWordcount)
+			.link("text")
+			.type("wordcount")
+			.tip(d3.tip()
+				.direction('e')
+				.attr('class', 'd3-tip')
+				.html(function (d) {
+					return '#' + d.ordinal + ':&nbsp;&nbsp;&nbsp;' + d.value;
+				})));
+	d3.select("#faces svg")
+		.call(barChart()
+			.data(dataFaces)
+			.link("text")
+			.type("faces")
+			.tip(d3.tip()
+				.direction('e')
+				.attr('class', 'd3-tip')
+				.html(function (d) {
+					return '#' + d.ordinal + ':&nbsp;&nbsp;&nbsp;' + d.value;
+				})));
+
+	function barChart() {
+		var margin = {
+			top: 15,
+			right: 50,
+			bottom: 0,
+			left: 160
+		};
+		var height = 1200;
+		var tip, link, type, data; //custom tip format, /link/ customization for hyperlinks, type of chart being drawn, data.
+		function halfwidth() {     // half the width & change of .innerbox
+			return ($('.innerbox')
+				.width() / 2 - 260);
+		}
+		var chart = function (svg) {
+			//set scale & initial conditions
+			var yScale = d3.scale.ordinal()
+				.rangeRoundBands([0, height - margin.top - margin.bottom], 0.1);
+			var xScale = d3.scale.linear()
+				.range([0, halfwidth()]);
+			var xAxis = d3.svg.axis()
+				.scale(xScale)
+				.orient("top")
+				.tickSize(-height + margin.top + margin.bottom); // reverse direction
+			var yAxis = d3.svg.axis()
+				.scale(yScale)
+				.orient("left")
+				.tickFormat(function () {
+					return '';
+				});
+			svg.style('width', (halfwidth() + margin.left + margin.right) + 'px') //automatic dimensions
+				.style('height', (height + margin.top + margin.bottom) + 'px');
+			yScale.domain(data.map(function (d) {
+				return d.name;
+			}));
+			xScale.domain([0, d3.max(data, function (d) {
+				return d.value;
+			})]);
+			//build other
+			var g = svg.append('g')
+				.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+			tip.direction('e')
+				.attr('class', 'd3-tip');
+			g.call(tip);
+			//build bars
+			g.selectAll(".graphfill")
+				.data(data)
+				.enter()
+				.append("rect")
+				.attr("class", "graphfill")
+				.attr("y", function (d) {
+					return yScale(d.name);
+				})
+				.attr("height", yScale.rangeBand())
+				.attr("width", function (d) {
+					return xScale(d.value);
+				})
+				.on('mouseover', function (d) { // give tooltip exit delay so it doesn't flicker when you cross over a guide
+					clearTimeout(window.t);
+					tip.attr('class', 'd3-tip animate')
+						.show(d);
+				})
+				.on('mouseout', function () {
+					window.t = setTimeout(function () {
+						tip.attr('class', 'd3-tip')
+							.hide();
+					}, hoverdelay);
+				});
+			g.append("g")
+				.attr("class", "x axis")
+				.call(xAxis);
+			g.append("g")
+				.attr("class", "y axis")
+				.call(yAxis);
+			if (type == "faces") { //puts emoticon pictures on axis
+				g.selectAll(".tick")
+					.filter(function (d) {
+						return typeof (d) == "string";
+					})
+					.each(function (d, i) { //https://groups.google.com/forum/#!topic/d3-js/64MIFV6vy-k
+						var svg_img = g.append('a')
+							.attr("xlink:href", "/" + link + "/?q=" + d)
+							.append('image') //http://stackoverflow.com/questions/15989680/auto-width-and-height-for-svg-image
+						.attr('image-rendering', 'optimizeQuality')
+							.attr('x', '0')
+							.attr('y', 17 + i * 33),
+							img = new Image();
+						img.src = "/static/faces/" + d + ".png";
+						img.onload = function () {
+							var width = this.width;
+							var height = this.height;
+							svg_img.attr('height', height)
+								.attr('width', width)
+								.attr('x', -width - 3)
+								.attr('xlink:href', img.src)
+								.append("title")
+								.text(d);
+						};
+					});
+			} else { //simple hyperlinks on axis labels
+				g.selectAll("text")
+					.filter(function (d) { // Makes the axis label a hyperlink
+						var hasMatch = false; // http://stackoverflow.com/questions/6384421/consult-if-a-value-exists-in-a-json
+						for (var i = 0; i < data.length; i++) {
+							var entry = data[i];
+							if (entry.name == d) {
+								hasMatch = true;
+								break;
+							}
+						}
+						return hasMatch;
+					})
+					.append('a')
+					.attr("xlink:href", function (d) {
+						return "/" + link + "/?q=" + d;
+					})
+					.text(function (d) {
+						return d;
+					});
+			}
+			d3.select(window)
+				.on('resize.' + type, resize); // http://stackoverflow.com/questions/16714271/trying-to-add-multiple-d3-graphs
+			function resize() { //http://eyeseast.github.io/visible-data/2013/08/28/responsive-charts-with-d3/
+				svg.style('width', (halfwidth() + margin.left + margin.right) + 'px');
+				xScale.range([0, halfwidth()]);
+				svg.selectAll('rect.graphfill')
+					.attr('width', function (d) {
+						return xScale(d.value);
+					});
+				svg.select('.x.axis')
+					.call(xAxis);
+			}
+		};
+		chart.data = function (value) {
+			if (!arguments.length) return data;
+			data = value;
+			return chart;
+		};
+		chart.link = function (value) {
+			if (!arguments.length) return link;
+			link = value;
+			return chart;
+		};
+		chart.tip = function (value) {
+			if (!arguments.length) return tip;
+			tip = value;
+			return chart;
+		};
+		chart.type = function (value) {
+			if (!arguments.length) return type;
+			type = value;
+			return chart;
+		};
+		return chart;
+	}
+})();
+// THE TOTALLY RAD RADIAL
+(function () {
+	var dataRadial = {{populartimes|safe}};
+	d3.select("#radial svg")
+		.call(radialChart()
+			.data(dataRadial));
+
+	function radialChart() {
+		var maxVal = Math.ceil(d3.max(dataRadial)/5000)*5000,
+			data, radial_container,
+			circularGuide = [0],
+			padding = 20,
+			w = $('.innerbox')
+				.width(),
+			h = $(window)
+				.height(),
+			keys = ["Midnight", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "Noon", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
+		while(circularGuide[circularGuide.length-1] < maxVal){ // generates list of values for ring guide "ticks"
+			circularGuide.push(circularGuide[circularGuide.length-1]+5000);
+		}
+		var chart = function (svg) {
+			svg.attr('width', w) // canvas
+				.attr('height', h);
+			radial_container = svg.append("g").attr('id', 'radial_container'); //provides orientation so we can translate the group and not every element individually
+			// calculates and centres the radial_container
+			var heightConstraint = h - padding * 2,
+				widthConstraint = w - padding * 2,
+				radius = d3.scale.linear()
+					.domain([0, maxVal])
+					.range([0, (d3.min([heightConstraint, widthConstraint]) / 2)]),
+				centerXPos = widthConstraint / 2 + padding,
+				centerYPos = heightConstraint / 2 + padding;
+			radial_container.attr("transform", "translate(" + centerXPos + ", " + centerYPos + ")");
+			//generate arc data
+			var pie = d3.layout.pie()
+				.value(function (d) {
+					return d;
+				})
+				.sort(null),
+				piedata = [];
+			for (var i = 0; i < data.length; i++) {
+				piedata.push(1);
+			}
+			var radialGroup = radial_container.selectAll('.radialGroup') //holds the singular sections
+				.data([piedata])
+				.enter()
+				.append("g")
+				.attr('class', 'radialGroup');
+			tip = d3.tip() //tooltips
+				.direction('e')
+				.attr('class', 'd3-tip')
+				.html(function (d) {
+					var startAngles = [0, 2, 5, 7, 10, 13, 15, 18, 20, 23, 26, 28, 31, 34, 36, 39, 41, 44, 47, 49, 52, 54, 57, 60],
+						hour = startAngles.indexOf(Math.floor(d.startAngle * 10));
+					return data[hour] + ' lines typed at ' + keys[hour];
+				});
+			radial_container.call(tip);
+			var arcRadius = d3.svg.arc()
+				.outerRadius(function (d, i) {
+					return radius(data[i]);
+				});
+			//draw arc
+			radialGroup.selectAll(".radialGroup")
+				.data(pie)
+				.enter()
+				.append("path")
+				.attr("d", arcRadius)
+				.attr('class', 'graphfill')
+				.on('mouseover', function (d) { // gives the tooltip some exit delay so it doesn't flicker when you cross over a guide
+					clearTimeout(window.t);
+					tip.attr('class', 'd3-tip animate')
+						.show(d);
+				})
+				.on('mouseout', function () {
+					window.t = setTimeout(function () {
+						tip.attr('class', 'd3-tip')
+							.hide();
+					}, hoverdelay);
+				})
+				.on("mousemove", function () { // follows mouse
+					return tip.style("top", (d3.event.pageY - 25) + "px")
+						.style("left", (d3.event.pageX + 20) + "px");
+				});
+			//circular axis
+			radial_container.selectAll('.circle-ticks')
+				.data(circularGuide)
+				.enter()
+				.append('g')
+				.attr("class", "circle-ticks")
+				.append("circle")
+				.attr("r", function (d) {
+					return radius(d);
+				})
+				.attr("class", "radialguide")
+				.style("fill", "none")
+				.append("text")
+				.attr("text-anchor", "middle")
+				.attr("class", "axis")
+				.attr("dy", function (d) {
+					return -1 * radius(d);
+				})
+				.text(function (d) {
+					if (d !== 0) return d;
+				});
+			//line axis
+			var lineAxes = radial_container.selectAll('.line-ticks')
+				.data(keys)
+				.enter()
+				.append('g')
+				.attr("transform", function (d, i) {
+					return "rotate(" + ((i / 24 * 360) - 90) + ")translate(" + radius(maxVal) + ")";
+				})
+				.attr("class", "line-ticks");
+			lineAxes.append('line')
+				.attr("x2", -1 * radius(maxVal))
+				.attr("class", "radialguide");
+			lineAxes.append('text')
+				.text(function (d, i) {
+					return keys[i];
+				})
+				.attr("text-anchor", "middle")
+				.attr("class", "axis")
+				.attr("transform", function (d, i) {
+					if (i == 12) {
+						return "rotate(-90)";
+					} else if (i === 0) {
+						return "rotate(90)translate(0,20)";
+					} else return (i / 24 * 360) < 180 ? null : "rotate(180)";
+				});
+			//resizing
+			d3.select(window)
+				.on('resize.radial', resize);
+			function resize() {
+				svg.selectAll('#radial_container')
+					.remove(); // have to remove everything since both x and y change, unlike with the bar chart
+				w = $('.innerbox')
+					.width();
+				h = $(window)
+					.height();
+				d3.select("#radial svg")
+					.call(radialChart()
+						.data(data));
+			}
+		};
+		chart.data = function (value) {
+			if (!arguments.length) return data;
+			data = value;
+			return chart;
+		};
+		return chart;
+	}
+})();
+}); // fin
+</script>
+
+{% endblock %}
+<!--
+http://stackoverflow.com/questions/340888/navigation-in-django/899993#899993
+https://github.com/divio/django-cms/blob/develop/menus/templates/menu/menu.html
+https://www.google.com/search?q=django+template+menu+example&oq=django+template+menu+example&aqs=chrome..69i57j0.11203j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+https://www.google.com/search?q=django+class+select&oq=django+class+selec&aqs=chrome.1.69i57j0l3.12307j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+-->

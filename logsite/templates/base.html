@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Destiny Chat Logs</title>
+	<link rel="stylesheet" type="text/css" href="/static/main.css" />
+	{% block css %}{% endblock %}
+	<script type="text/javascript">document.write("\<script src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js' type='text/javascript'>\<\/script>");</script>
+	{% block js %}{% endblock %}
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<h1 style="margin-left: 50px;">Destiny Chat Log Site v2</h1>
+
+	{# http://stackoverflow.com/questions/340888/navigation-in-django/899993#899993 #}
+	<ul id="navigation">
+		<li class="{% block nav-chronological %}{% endblock %}"><a class="menu" href="/chronological/">Chronological</a></li>
+		<li class="{% block nav-text %}{% endblock %}"><a class="menu" href="/text/">Text Search</a></li>
+		<li class="{% block nav-user %}{% endblock %}"><a class="menu" href="/user/">User Search</a></li>
+		<li class="{% block nav-statistics %}{% endblock %}"><a class="menu" href="/statistics/">Statistics</a></li>
+		<li class="{% block nav-sql %}{% endblock %}"><a class="menu" href="/sql/">PostgreSQL</a></li>
+		<li class="{% block nav-streams %}{% endblock %}"><a class="menu" href="/streams/">Viewer Trends (WIP)</a></li>
+	</ul>
+
+	<div class="outerbox">
+		{% block log %}{% endblock %}
+	</div>
+</body>
+</html>

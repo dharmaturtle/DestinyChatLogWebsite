@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block nav-user %}{% if type == "user" %}selected gradient{% endif %}{% endblock %}
+{% block nav-text %}{% if type == "text" %}selected gradient{% endif %}{% endblock %}
+{% block log %}
+<div class = "search">
+	{% if type == "user" %}
+	<form action="/user/" method="get">
+		<input type="text" name="q" value="{{query}}">
+		<input type="submit" value="User Search">
+	</form>
+	{% else %}
+	<form action="/text/" method="get">
+		<input type="text" name="q" value="{{query}}">
+		<input type="submit" value="Text Search">
+	</form>
+	{% endif %}
+	
+</div>
+{% if log_list.object_list|length != 0 %}
+	<div class="paginatebar">
+		<div class="pagination">
+			<span class="step-links">
+				{% if query %}
+					{% if log_list.has_previous %}
+						<a href="?page={{ log_list.previous_page_number }}&amp;q={{query}}">&lt;&lt;</a>
+					{% endif %}
+
+					<span class="current" title ="out of {{ log_list.paginator.num_pages }}">
+						{{ log_list.number }}
+					</span>
+
+					{% if log_list.has_next %}
+						<a href="?page={{ log_list.next_page_number }}&amp;q={{query}}">&gt;&gt;</a>
+					{% endif %}
+				{% else %}
+					{% if log_list.has_previous %}
+						<a href="?page={{ log_list.previous_page_number }}">&lt;&lt;</a>
+					{% endif %}
+
+					<span class="current" title ="out of {{ log_list.paginator.num_pages }}">
+						{{ log_list.number }}
+					</span>
+
+					{% if log_list.has_next %}
+						<a href="?page={{ log_list.next_page_number }}">&gt;&gt;</a>
+					{% endif %}
+				{% endif %}
+			</span>
+		</div>
+	</div>
+{% endif %}
+<div class="innerbox">
+	{% if log_list.object_list|length == 0 %}
+		{% if query %}
+			There are no results for "{{query}}".
+		{% else %}
+			Enter a search query!
+		{% endif %}
+	{% else %}
+		<table>
+		<tr><td colspan="3"><span class="timezone">Times are given in CST{#<%= @messages.first.time.strftime("%Z") %>.#}</span></td></tr>
+		{% for log in log_list.object_list %}
+		<tr>
+			<td class="time" {#title="{{log.time}}"#} >{{log.time}}</td>
+			<td class="user"><a href="/user/?q={{log.user}}">{{log.user}}</a></td>
+			<td class="message">{{log.text}}</td>
+		</tr>
+		{% endfor %}
+		</table>
+	{% endif %}
+</div>
+{% endblock %}
+<!--
+http://stackoverflow.com/questions/340888/navigation-in-django/899993#899993
+https://github.com/divio/django-cms/blob/develop/menus/templates/menu/menu.html
+https://www.google.com/search?q=django+template+menu+example&oq=django+template+menu+example&aqs=chrome..69i57j0.11203j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+https://www.google.com/search?q=django+class+select&oq=django+class+selec&aqs=chrome.1.69i57j0l3.12307j0j1&sourceid=chrome&espv=210&es_sm=93&ie=UTF-8
+-->
