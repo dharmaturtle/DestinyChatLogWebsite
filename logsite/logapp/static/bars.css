@@ -1,0 +1,124 @@
+@-webkit-keyframes bounceIn {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(.3);
+  }
+  50% {
+    opacity: 1;
+    -webkit-transform: scale(1.05);
+  }
+  70% {
+    -webkit-transform: scale(.9);
+  }
+  100% {
+    -webkit-transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  border: 1px solid #fff;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.d3-tip.animate {
+  animation: bounceIn 0.2s ease-out;
+  -webkit-animation: bounceIn 0.2s ease-out;
+}
+
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  top: 37%;
+  left: -11px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25C0";
+  position: absolute;
+  text-align: center;
+}
+
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.domain {
+  display: none;
+}
+
+.axis line {
+  stroke-width: 1px;
+  stroke: #ffffff;
+  opacity: 0.75;
+  shape-rendering: crispedges;
+}
+
+.axis { /*SVG text color*/
+  fill: #545454;
+}
+
+.graphfill { /* transition time helps get rid of the flicker that occurs when cursor crosses a guideline */
+  fill: #0083ff;
+  fill-opacity: 0.5;
+  -webkit-transition: .33s all;   
+  -moz-transition: .33s all;   
+  -ms-transition: .33s all;   
+  -o-transition: .33s all;   
+  transition: .33s all;   
+}
+
+.graphfill:hover {
+  fill-opacity: 1;
+}
+
+.half {
+    width:50%;
+}
+    
+.half.half-left {
+    float:left;
+}
+    
+.half.half-right{
+    float:right;
+}
+
+h2 {
+  text-align:center;
+}
+
+.axislabel{
+  font-weight: bold;
+  color: #545454;
+  text-align:center;
+}
+
+.radialguide{ 
+  stroke: #ffffff;
+  stroke-width: 1px;
+  opacity: 0.75; /*makes the axis strongly colored away from the origin that *no one* will notice*/
+}

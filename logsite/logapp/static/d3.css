@@ -1,0 +1,131 @@
+/* Tooltip */
+
+ .nvtooltip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  border: 1px solid #fff;
+  text-align: center;
+  z-index:9;
+  position: absolute;
+  
+  transition: opacity 500ms linear;
+  -moz-transition: opacity 500ms linear;
+  -webkit-transition: opacity 500ms linear;
+
+  transition-delay: 500ms;
+  -moz-transition-delay: 500ms;
+  -webkit-transition-delay: 500ms;
+
+  -moz-box-shadow: 1px 1px 4px rgba(0,0,0,.5);
+  -webkit-box-shadow: 1px 1px 4px rgba(0,0,0,.5);
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.nvtooltip.arrowdown:after { /* Gives us the little triangle pointing at the... point */
+  position: absolute;
+  width: 100%;
+  top: 105%;
+  left: -1px;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+}
+
+.nvtooltip.arrowup:after { /* Gives us the little triangle pointing at the... point */
+  position: absolute;
+  width: 100%;
+  top: -25%;
+  left: -1px;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25B2";
+}
+
+.nvtooltip h3 {
+  margin: 0 0 9px 0;
+}
+
+/* General SVG CSS */
+
+
+
+/* Legend */
+
+.legend .series {
+  cursor: pointer;
+}
+
+.legend circle {
+  stroke-width: 2px;
+}
+
+.legend .disabled circle {
+  fill-opacity: 0;
+}
+
+/* Axes */
+
+.axis path {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .75;
+  shape-rendering: crispEdges;
+}
+
+.axis path.domain {
+  stroke-opacity: .75;
+}
+
+.axis line {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .25;
+  shape-rendering: crispEdges;
+}
+
+.axis line.zero {
+  stroke-opacity: .75;
+}
+
+
+/* Line chart */
+
+.point-paths path {
+  stroke-opacity: 0;
+  fill-opacity: 0;
+}
+
+.lines path {
+  fill: none;
+  stroke-width: 1px;
+  stroke-linecap: round;
+
+  transition: stroke-width 250ms linear;
+  -moz-transition: stroke-width 250ms linear;
+  -webkit-transition: stroke-width 250ms linear;
+
+  transition-delay: 250ms;
+  -moz-transition-delay: 250ms;
+  -webkit-transition-delay: 250ms;
+}
+
+.line.hover path {
+  stroke-width: 6px;
+}
+
+.line.halfhover path {
+  /*stroke-width: 3px;*/
+  stroke: black;
+}
+
+.lines .point {
+  transition: stroke-width 250ms linear;
+  -moz-transition: stroke-width 250ms linear;
+  -webkit-transition: stroke-width 250ms linear;
+}
+
+.lines .point.hover {
+  stroke-width: 20px;
+  stroke-opacity: .5;
+}
