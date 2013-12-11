@@ -199,6 +199,7 @@ parts/
 var/
 sdist/
 develop-eggs/
+logsite/.idea/
 .installed.cfg
 
 # Installer logs
